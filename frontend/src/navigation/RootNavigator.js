@@ -1,5 +1,6 @@
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { useAuth } from '../presentation/context/AuthContext';
+import { EventsProvider } from '../presentation/context/EventsContext';
 import { SplashScreen } from '../presentation/screens/SplashScreen';
 import { colors } from '../theme/theme';
 import { AppStack } from './AppStack';
@@ -26,7 +27,13 @@ export function RootNavigator() {
 
   return (
     <NavigationContainer theme={navigationTheme}>
-      {isAuthenticated ? <AppStack /> : <AuthStack />}
+      {isAuthenticated ? (
+        <EventsProvider>
+          <AppStack />
+        </EventsProvider>
+      ) : (
+        <AuthStack />
+      )}
     </NavigationContainer>
   );
 }

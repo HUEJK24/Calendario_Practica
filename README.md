@@ -122,6 +122,11 @@ Endpoints disponibles:
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `GET  /api/auth/me` (protegido con Bearer Token)
+- `GET  /api/events` (protegido)
+- `POST /api/events` (protegido)
+- `GET  /api/events/:id` (protegido)
+- `PUT  /api/events/:id` (protegido)
+- `DELETE /api/events/:id` (protegido)
 
 ### Frontend
 

@@ -1,13 +1,19 @@
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { colors, radius, spacing } from '../../theme/theme';
 
-export function TextField({ label, error, style, ...inputProps }) {
+export function TextField({ label, error, style, inputStyle, multiline, ...inputProps }) {
   return (
     <View style={[styles.wrapper, style]}>
       {label ? <Text style={styles.label}>{label}</Text> : null}
       <TextInput
+        multiline={multiline}
         placeholderTextColor={colors.muted}
-        style={[styles.input, error ? styles.inputError : null]}
+        style={[
+          styles.input,
+          multiline ? styles.inputMultiline : null,
+          error ? styles.inputError : null,
+          inputStyle,
+        ]}
         {...inputProps}
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -35,6 +41,10 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: colors.danger,
+  },
+  inputMultiline: {
+    minHeight: 80,
+    textAlignVertical: 'top',
   },
   error: {
     color: colors.danger,

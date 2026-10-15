@@ -1,5 +1,14 @@
-const { Pool } = require('pg');
+const { Pool, types } = require('pg');
 const env = require('./env');
+
+/**
+ * Evita desajustes de zona horaria: DATE y TIME se devuelven como texto
+ * ('AAAA-MM-DD' y 'HH:MM') en lugar de objetos Date dependientes del locale.
+ */
+const DATE_OID = 1082;
+const TIME_OID = 1083;
+types.setTypeParser(DATE_OID, (value) => value);
+types.setTypeParser(TIME_OID, (value) => (value ? value.slice(0, 5) : value));
 
 /**
  * Patrón Singleton: garantiza una única instancia del Pool de conexiones
