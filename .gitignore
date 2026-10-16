@@ -1,0 +1,22 @@
+# General
+node_modules
+.env
+*.log
+.DS_Store
+
+# Builds / caches
+.expo
+dist
+build
+coverage
+
+# IDE
+.vscode
+.idea
+
+# Documentation folder (internal notes/docs, not tracked)
+documents/
+
+# Tools/temp files for doc generation
+/tmp/doc-*
+*.tmp
