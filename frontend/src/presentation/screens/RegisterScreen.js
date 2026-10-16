@@ -2,11 +2,14 @@ import { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BrandMark } from '../components/BrandMark';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { TextField } from '../components/TextField';
 import { useAuth } from '../context/AuthContext';
@@ -58,9 +61,17 @@ export function RegisterScreen({ navigation }) {
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.brand}>
+            <BrandMark size={56} />
+          </View>
+
           <Text style={styles.title}>Crear cuenta</Text>
-          <Text style={styles.subtitle}>Regístrate para comenzar a organizar tu agenda.</Text>
+          <Text style={styles.subtitle}>Regístrate para empezar a organizar tu agenda.</Text>
 
           <TextField
             label="Correo electrónico"
@@ -78,7 +89,7 @@ export function RegisterScreen({ navigation }) {
             onChangeText={setPassword}
             error={errors.password}
             secureTextEntry
-            placeholder="••••••••"
+            placeholder="Mínimo 8 caracteres"
           />
           <TextField
             label="Confirmar contraseña"
@@ -86,16 +97,25 @@ export function RegisterScreen({ navigation }) {
             onChangeText={setConfirmPassword}
             error={errors.confirmPassword}
             secureTextEntry
-            placeholder="••••••••"
+            placeholder="Repite tu contraseña"
+            returnKeyType="go"
+            onSubmitEditing={handleSubmit}
           />
 
-          {formError ? <Text style={styles.formError}>{formError}</Text> : null}
+          {formError ? (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>{formError}</Text>
+            </View>
+          ) : null}
 
           <PrimaryButton title="Registrarme" onPress={handleSubmit} loading={isSubmitting} />
 
-          <Text style={styles.link} onPress={() => navigation.goBack()}>
-            Ya tengo una cuenta
-          </Text>
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>¿Ya tienes cuenta?</Text>
+            <Pressable accessibilityRole="button" hitSlop={8} onPress={() => navigation.goBack()}>
+              <Text style={styles.footerLink}> Inicia sesión</Text>
+            </Pressable>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -106,13 +126,32 @@ const styles = StyleSheet.create({
   safeArea: { backgroundColor: colors.background, flex: 1 },
   flex: { flex: 1 },
   content: { flexGrow: 1, justifyContent: 'center', padding: spacing.lg },
-  title: { color: colors.text, fontSize: 30, fontWeight: '700', textAlign: 'center' },
+  brand: { alignItems: 'center', marginBottom: spacing.lg },
+  title: {
+    color: colors.text,
+    fontSize: 24,
+    fontWeight: '800',
+    textAlign: 'left',
+  },
   subtitle: {
     color: colors.muted,
-    marginBottom: spacing.xl,
-    marginTop: spacing.sm,
-    textAlign: 'center',
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: spacing.lg,
+    marginTop: spacing.xs,
   },
-  formError: { color: colors.danger, marginBottom: spacing.md, textAlign: 'center' },
-  link: { color: colors.primary, marginTop: spacing.lg, textAlign: 'center' },
+  errorBox: {
+    backgroundColor: colors.dangerSoft,
+    borderRadius: 12,
+    marginBottom: spacing.md,
+    padding: spacing.md,
+  },
+  errorText: { color: colors.danger, fontSize: 13, textAlign: 'center' },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: spacing.lg,
+  },
+  footerText: { color: colors.muted, fontSize: 14 },
+  footerLink: { color: colors.primary, fontSize: 14, fontWeight: '700' },
 });

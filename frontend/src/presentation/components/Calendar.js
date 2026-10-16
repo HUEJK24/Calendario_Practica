@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, radius, spacing } from '../../theme/theme';
+import { MonthYearPicker } from './MonthYearPicker';
 import { getCategory } from '../../domain/constants/eventMeta';
 import {
   WEEKDAYS_SHORT,
@@ -9,21 +11,48 @@ import {
   toISODate,
 } from '../../domain/utils/date';
 
-const MAX_DOTS = 3;
+const MAX_DOTS = 4;
 
 export function Calendar({ viewDate, selectedDate, eventsByDay, onPrevMonth, onNextMonth, onSelectDate }) {
+  const [isPickerVisible, setIsPickerVisible] = useState(false);
   const today = new Date();
   const weeks = buildMonthMatrix(viewDate);
   const currentMonth = viewDate.getMonth();
 
+  function handleConfirmDate(date) {
+    onSelectDate(date);
+    setIsPickerVisible(false);
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Pressable accessibilityRole="button" onPress={onPrevMonth} style={styles.navButton}>
+        <Pressable
+          accessibilityLabel="Mes anterior"
+          accessibilityRole="button"
+          hitSlop={8}
+          onPress={onPrevMonth}
+          style={({ pressed }) => [styles.navButton, pressed && styles.navPressed]}
+        >
           <Text style={styles.navSymbol}>‹</Text>
         </Pressable>
-        <Text style={styles.monthLabel}>{monthLabel(viewDate)}</Text>
-        <Pressable accessibilityRole="button" onPress={onNextMonth} style={styles.navButton}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Elegir mes y año. Mes actual: ${monthLabel(viewDate)}`}
+          hitSlop={8}
+          onPress={() => setIsPickerVisible(true)}
+          style={({ pressed }) => [styles.monthButton, pressed && styles.monthPressed]}
+        >
+          <Text style={styles.monthLabel}>{monthLabel(viewDate)}</Text>
+          <Text style={styles.monthChevron}>▾</Text>
+        </Pressable>
+        <Pressable
+          accessibilityLabel="Mes siguiente"
+          accessibilityRole="button"
+          hitSlop={8}
+          onPress={onNextMonth}
+          style={({ pressed }) => [styles.navButton, pressed && styles.navPressed]}
+        >
           <Text style={styles.navSymbol}>›</Text>
         </Pressable>
       </View>
@@ -50,6 +79,7 @@ export function Calendar({ viewDate, selectedDate, eventsByDay, onPrevMonth, onN
               <Pressable
                 key={iso}
                 accessibilityRole="button"
+                hitSlop={6}
                 onPress={() => onSelectDate(day)}
                 style={styles.cell}
               >
@@ -65,6 +95,7 @@ export function Calendar({ viewDate, selectedDate, eventsByDay, onPrevMonth, onN
                       styles.dayText,
                       !isCurrentMonth ? styles.dayTextMuted : null,
                       isSelected ? styles.dayTextSelected : null,
+                      isToday && !isSelected ? styles.dayTextToday : null,
                     ]}
                   >
                     {day.getDate()}
@@ -90,6 +121,14 @@ export function Calendar({ viewDate, selectedDate, eventsByDay, onPrevMonth, onN
           })}
         </View>
       ))}
+
+      <MonthYearPicker
+        initialDate={selectedDate}
+        key={isPickerVisible ? 'open' : 'closed'}
+        onConfirm={handleConfirmDate}
+        onClose={() => setIsPickerVisible(false)}
+        visible={isPickerVisible}
+      />
     </View>
   );
 }
@@ -107,25 +146,47 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: spacing.sm,
+    paddingHorizontal: spacing.xs,
+  },
+  monthButton: {
+    alignItems: 'center',
+    borderRadius: radius.sm,
+    flexDirection: 'row',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  monthPressed: {
+    opacity: 0.86,
   },
   monthLabel: {
     color: colors.text,
     fontSize: 17,
+    fontWeight: '800',
+    letterSpacing: 0.2,
+  },
+  monthChevron: {
+    color: colors.primary,
+    fontSize: 11,
     fontWeight: '700',
+    marginLeft: 6,
   },
   navButton: {
     alignItems: 'center',
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: colors.primarySoft,
     borderRadius: radius.sm,
-    height: 32,
+    height: 40,
     justifyContent: 'center',
-    width: 32,
+    width: 40,
+  },
+  navPressed: {
+    opacity: 0.86,
+    transform: [{ scale: 0.98 }],
   },
   navSymbol: {
     color: colors.primary,
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
-    lineHeight: 22,
+    lineHeight: 24,
   },
   weekRow: {
     flexDirection: 'row',
@@ -133,26 +194,28 @@ const styles = StyleSheet.create({
   weekLabel: {
     color: colors.muted,
     flex: 1,
-    fontSize: 12,
-    fontWeight: '600',
-    paddingVertical: spacing.xs,
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+    paddingVertical: spacing.xs + 2,
     textAlign: 'center',
+    textTransform: 'uppercase',
   },
   cell: {
     alignItems: 'center',
     flex: 1,
-    paddingVertical: spacing.xs,
+    paddingVertical: spacing.xs + 2,
   },
   dayBubble: {
     alignItems: 'center',
     borderRadius: radius.pill,
-    height: 34,
+    height: 36,
     justifyContent: 'center',
-    width: 34,
+    width: 36,
   },
   todayBubble: {
     borderColor: colors.primary,
-    borderWidth: 1,
+    borderWidth: 1.5,
   },
   selectedBubble: {
     backgroundColor: colors.primary,
@@ -160,24 +223,29 @@ const styles = StyleSheet.create({
   dayText: {
     color: colors.textSoft,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   dayTextMuted: {
-    color: colors.border,
+    color: colors.muted,
+    opacity: 0.6,
   },
   dayTextSelected: {
     color: colors.primaryText,
-    fontWeight: '700',
+    fontWeight: '800',
+  },
+  dayTextToday: {
+    color: colors.primary,
   },
   dotsRow: {
+    alignItems: 'center',
     flexDirection: 'row',
     gap: 3,
-    height: 8,
-    marginTop: 2,
+    height: 10,
+    marginTop: 3,
   },
   dot: {
     borderRadius: radius.pill,
-    height: 5,
-    width: 5,
+    height: 5.5,
+    width: 5.5,
   },
 });

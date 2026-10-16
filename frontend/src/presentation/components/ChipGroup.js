@@ -12,11 +12,13 @@ export function ChipGroup({ label, options, value, onChange }) {
             <Pressable
               key={option.key}
               accessibilityRole="button"
+              hitSlop={4}
               onPress={() => onChange(option.key)}
-              style={[
+              style={({ pressed }) => [
                 styles.chip,
                 { borderColor: isActive ? option.color : colors.border },
-                isActive ? { backgroundColor: `${option.color}22` } : null,
+                isActive ? { backgroundColor: `${option.color}24` } : null,
+                pressed ? styles.chipPressed : null,
               ]}
             >
               <View style={[styles.dot, { backgroundColor: option.color }]} />
@@ -36,9 +38,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   label: {
-    color: colors.muted,
+    color: colors.textSoft,
     fontSize: 13,
-    marginBottom: spacing.xs,
+    fontWeight: '700',
+    marginBottom: spacing.xs + 3,
   },
   row: {
     flexDirection: 'row',
@@ -50,8 +53,13 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     borderWidth: 1,
     flexDirection: 'row',
+    minHeight: 42,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
+  },
+  chipPressed: {
+    opacity: 0.86,
+    transform: [{ scale: 0.98 }],
   },
   dot: {
     borderRadius: radius.pill,
@@ -62,6 +70,6 @@ const styles = StyleSheet.create({
   chipLabel: {
     color: colors.textSoft,
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

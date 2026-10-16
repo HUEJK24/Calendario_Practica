@@ -17,11 +17,11 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xl,
+    paddingVertical: spacing.xxl,
   },
   circle: {
     alignItems: 'center',
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: colors.primarySoft,
     borderRadius: radius.pill,
     height: 72,
     justifyContent: 'center',
@@ -31,20 +31,21 @@ const styles = StyleSheet.create({
   circleInner: {
     borderColor: colors.primary,
     borderRadius: radius.pill,
-    borderWidth: 3,
+    borderWidth: 2.5,
     height: 30,
     width: 30,
   },
   title: {
     color: colors.text,
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 17,
+    fontWeight: '800',
+    textAlign: 'center',
   },
   message: {
     color: colors.muted,
     fontSize: 13,
-    lineHeight: 19,
-    marginTop: spacing.xs,
+    lineHeight: 20,
+    marginTop: spacing.xs + 2,
     textAlign: 'center',
   },
 });

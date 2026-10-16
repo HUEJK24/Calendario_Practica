@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, radius, spacing } from '../../theme/theme';
 import { getCategory, getPriority } from '../../domain/constants/eventMeta';
 import { formatTimeRange } from '../../domain/utils/date';
@@ -8,14 +8,20 @@ export function EventCard({ event, onPress }) {
   const priority = getPriority(event.priority);
 
   return (
-    <View style={styles.card}>
+    <Pressable
+      accessibilityRole="button"
+      disabled={!onPress}
+      hitSlop={4}
+      onPress={onPress}
+      style={({ pressed }) => [styles.card, pressed && onPress ? styles.cardPressed : null]}
+    >
       <View style={[styles.accentBar, { backgroundColor: category.color }]} />
       <View style={styles.body}>
         <View style={styles.topRow}>
           <Text style={styles.title} numberOfLines={1}>
             {event.title}
           </Text>
-          <View style={[styles.priorityPill, { borderColor: priority.color }]}>
+          <View style={[styles.priorityPill, { borderColor: `${priority.color}66` }]}>
             <View style={[styles.priorityDot, { backgroundColor: priority.color }]} />
             <Text style={[styles.priorityLabel, { color: priority.color }]}>{priority.label}</Text>
           </View>
@@ -34,12 +40,10 @@ export function EventCard({ event, onPress }) {
         ) : null}
 
         {onPress ? (
-          <Text style={styles.editHint} onPress={onPress}>
-            Editar
-          </Text>
+          <Text style={styles.editHint}>Editar</Text>
         ) : null}
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -52,6 +56,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: spacing.sm,
     overflow: 'hidden',
+  },
+  cardPressed: {
+    opacity: 0.88,
+    transform: [{ scale: 0.995 }],
   },
   accentBar: {
     width: 4,
@@ -69,16 +77,18 @@ const styles = StyleSheet.create({
     color: colors.text,
     flex: 1,
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
+    letterSpacing: 0.1,
     marginRight: spacing.sm,
   },
   priorityPill: {
     alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.02)',
     borderRadius: radius.pill,
     borderWidth: 1,
     flexDirection: 'row',
     paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    paddingVertical: 3,
   },
   priorityDot: {
     borderRadius: radius.pill,
@@ -88,17 +98,19 @@ const styles = StyleSheet.create({
   },
   priorityLabel: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '800',
+    letterSpacing: 0.2,
+    textTransform: 'uppercase',
   },
   metaRow: {
     alignItems: 'center',
     flexDirection: 'row',
-    marginTop: spacing.xs,
+    marginTop: spacing.xs + 2,
   },
   time: {
     color: colors.textSoft,
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   dotSeparator: {
     color: colors.muted,
@@ -106,18 +118,18 @@ const styles = StyleSheet.create({
   },
   category: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   description: {
     color: colors.muted,
     fontSize: 13,
-    lineHeight: 18,
-    marginTop: spacing.xs,
+    lineHeight: 20,
+    marginTop: spacing.xs + 2,
   },
   editHint: {
     color: colors.primary,
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '700',
     marginTop: spacing.sm,
   },
 });

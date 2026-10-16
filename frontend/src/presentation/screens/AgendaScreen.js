@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { useEvents } from '../context/EventsContext';
@@ -10,7 +10,20 @@ import { EventFormModal } from '../components/EventFormModal';
 import { colors, radius, shadow, spacing } from '../../theme/theme';
 import { addMonths, formatLongDate, startOfDay } from '../../domain/utils/date';
 
-export function AgendaScreen() {
+function SkeletonCard() {
+  return (
+    <View style={styles.skeleton}>
+      <View style={styles.skeletonBar} />
+      <View style={styles.skeletonBody}>
+        <View style={styles.skeletonLineShort} />
+        <View style={[styles.skeletonLine, { marginTop: spacing.sm }]} />
+        <View style={[styles.skeletonLine, { width: '80%', marginTop: spacing.xs + 2 }]} />
+      </View>
+    </View>
+  );
+}
+
+export function AgendaScreen({ navigation }) {
   const { user, signOut } = useAuth();
   const {
     eventsByDay,
@@ -87,15 +100,25 @@ export function AgendaScreen() {
             </Text>
           </View>
         </View>
-        <Pressable accessibilityRole="button" onPress={signOut} style={styles.logoutButton}>
-          <Text style={styles.logoutText}>Salir</Text>
+        <Pressable
+          accessibilityRole="button"
+          hitSlop={8}
+          onPress={signOut}
+          style={({ pressed }) => [styles.logoutButton, pressed && styles.logoutPressed]}
+        >
+          <Text style={styles.logoutText}>Cerrar sesión</Text>
         </Pressable>
       </View>
 
       {loadError ? (
         <View style={styles.errorBanner}>
           <Text style={styles.errorText}>{loadError}</Text>
-          <Pressable accessibilityRole="button" onPress={refresh} style={styles.retryButton}>
+          <Pressable
+            accessibilityRole="button"
+            hitSlop={8}
+            onPress={refresh}
+            style={({ pressed }) => [styles.retryButton, pressed && styles.logoutPressed]}
+          >
             <Text style={styles.retryText}>Reintentar</Text>
           </Pressable>
         </View>
@@ -115,18 +138,34 @@ export function AgendaScreen() {
         />
 
         <View style={styles.sectionHeader}>
-          <View>
+          <View style={styles.sectionHeading}>
             <Text style={styles.sectionTitle}>{formatLongDate(selectedDate)}</Text>
             <Text style={styles.sectionSubtitle}>
-              {dayEvents.length === 0
-                ? 'Sin eventos'
+              {isLoading
+                ? 'Cargando eventos...'
+                : dayEvents.length === 0
+                ? 'Sin eventos este día'
                 : `${dayEvents.length} ${dayEvents.length === 1 ? 'evento' : 'eventos'}`}
             </Text>
           </View>
+          <Pressable
+            accessibilityLabel="Ver todos los eventos"
+            accessibilityRole="button"
+            hitSlop={8}
+            onPress={() => navigation.navigate('Events')}
+            style={({ pressed }) => [styles.allEventsButton, pressed && styles.logoutPressed]}
+          >
+            <Text style={styles.allEventsText}>Ver todos</Text>
+            <Text style={styles.allEventsChevron}>›</Text>
+          </Pressable>
         </View>
 
         {isLoading ? (
-          <ActivityIndicator color={colors.primary} style={styles.loader} />
+          <>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </>
         ) : dayEvents.length === 0 ? (
           <EmptyState
             message="Toca el botón + para agendar una nueva actividad en este día."
@@ -139,7 +178,12 @@ export function AgendaScreen() {
         )}
       </ScrollView>
 
-      <Pressable accessibilityRole="button" onPress={openCreate} style={styles.fab}>
+      <Pressable
+        accessibilityLabel="Nuevo evento"
+        accessibilityRole="button"
+        onPress={openCreate}
+        style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
+      >
         <Text style={styles.fabSymbol}>+</Text>
       </Pressable>
 
@@ -157,10 +201,7 @@ export function AgendaScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    backgroundColor: colors.background,
-    flex: 1,
-  },
+  safeArea: { backgroundColor: colors.background, flex: 1 },
   header: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -168,115 +209,104 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
   },
-  userInfo: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    flex: 1,
-  },
+  userInfo: { alignItems: 'center', flexDirection: 'row', flex: 1 },
   avatar: {
     alignItems: 'center',
     backgroundColor: colors.primary,
     borderRadius: radius.pill,
-    height: 42,
+    height: 44,
     justifyContent: 'center',
-    marginRight: spacing.sm,
-    width: 42,
+    marginRight: spacing.md,
+    width: 44,
   },
-  avatarText: {
-    color: colors.primaryText,
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  greeting: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  email: {
-    color: colors.muted,
-    fontSize: 12,
-    maxWidth: 180,
-  },
+  avatarText: { color: colors.primaryText, fontSize: 19, fontWeight: '800' },
+  greeting: { color: colors.text, fontSize: 18, fontWeight: '800', letterSpacing: 0.1 },
+  email: { color: colors.muted, fontSize: 12, maxWidth: 200 },
   logoutButton: {
     borderColor: colors.border,
     borderRadius: radius.pill,
     borderWidth: 1,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs + 2,
+    paddingVertical: spacing.sm,
   },
-  logoutText: {
-    color: colors.textSoft,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  scrollContent: {
-    paddingBottom: 120,
-    paddingHorizontal: spacing.lg,
-  },
+  logoutPressed: { opacity: 0.86, transform: [{ scale: 0.98 }] },
+  logoutText: { color: colors.textSoft, fontSize: 12, fontWeight: '700' },
+  scrollContent: { paddingBottom: 120, paddingHorizontal: spacing.lg },
   errorBanner: {
     alignItems: 'center',
-    backgroundColor: 'rgba(248, 113, 113, 0.12)',
-    borderColor: colors.danger,
+    backgroundColor: colors.dangerSoft,
     borderRadius: radius.md,
-    borderWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginHorizontal: spacing.lg,
+    marginTop: spacing.sm,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  errorText: {
-    color: colors.danger,
-    flex: 1,
-    fontSize: 13,
-    marginRight: spacing.sm,
-  },
+  errorText: { color: colors.danger, flex: 1, fontSize: 13, marginRight: spacing.sm },
   retryButton: {
     borderColor: colors.danger,
     borderRadius: radius.pill,
     borderWidth: 1,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
+    paddingVertical: spacing.xs + 2,
   },
-  retryText: {
-    color: colors.danger,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  loader: {
-    marginTop: spacing.lg,
-  },
+  retryText: { color: colors.danger, fontSize: 12, fontWeight: '700' },
   sectionHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: spacing.md,
     marginTop: spacing.lg,
   },
-  sectionTitle: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: '700',
+  sectionHeading: { flex: 1, marginRight: spacing.sm },
+  sectionTitle: { color: colors.text, fontSize: 19, fontWeight: '800', letterSpacing: 0.1 },
+  sectionSubtitle: { color: colors.muted, fontSize: 13, marginTop: 2 },
+  allEventsButton: {
+    alignItems: 'center',
+    backgroundColor: colors.primarySoft,
+    borderRadius: radius.pill,
+    flexDirection: 'row',
+    minHeight: 40,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
-  sectionSubtitle: {
-    color: colors.muted,
-    fontSize: 13,
-    marginTop: 2,
+  allEventsText: { color: colors.primary, fontSize: 13, fontWeight: '800' },
+  allEventsChevron: { color: colors.primary, fontSize: 18, fontWeight: '800', marginLeft: 4, marginTop: -1 },
+  skeleton: {
+    backgroundColor: colors.surface,
+    borderColor: colors.borderSoft,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    flexDirection: 'row',
+    marginBottom: spacing.sm,
+    overflow: 'hidden',
+  },
+  skeletonBar: { backgroundColor: colors.primarySoft, width: 4 },
+  skeletonBody: { flex: 1, padding: spacing.md },
+  skeletonLineShort: {
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: radius.pill,
+    height: 14,
+    width: '42%',
+  },
+  skeletonLine: {
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: radius.pill,
+    height: 10,
   },
   fab: {
     alignItems: 'center',
     backgroundColor: colors.primary,
     borderRadius: radius.pill,
     bottom: spacing.lg,
-    height: 60,
+    height: 62,
     justifyContent: 'center',
     position: 'absolute',
     right: spacing.lg,
-    width: 60,
+    width: 62,
     ...shadow.floating,
   },
-  fabSymbol: {
-    color: colors.primaryText,
-    fontSize: 32,
-    fontWeight: '400',
-    lineHeight: 36,
-    marginTop: -2,
-  },
+  fabPressed: { opacity: 0.9, transform: [{ scale: 0.98 }] },
+  fabSymbol: { color: colors.primaryText, fontSize: 34, fontWeight: '400', lineHeight: 36, marginTop: -2 },
 });

@@ -11,8 +11,12 @@ types.setTypeParser(DATE_OID, (value) => value);
 types.setTypeParser(TIME_OID, (value) => (value ? value.slice(0, 5) : value));
 
 /**
- * Patrón Singleton: garantiza una única instancia del Pool de conexiones
- * durante todo el ciclo de vida del servidor.
+ * Patrón de diseño Singleton aplicado en este archivo: garantiza una única
+ * instancia del Pool de conexiones durante todo el ciclo de vida del servidor.
+ * El `module.exports` devuelve esa instancia compartida
+ * (`new DatabaseConnection()`): el Pool se crea una sola vez en `connect()` y
+ * se reutiliza en `query()`, por lo que toda la aplicación (models y servicios)
+ * consulta a través de la misma conexión.
  */
 class DatabaseConnection {
   constructor() {

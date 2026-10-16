@@ -20,3 +20,10 @@ documents/
 # Tools/temp files for doc generation
 /tmp/doc-*
 *.tmp
+
+# IA / asistente (skills, reglas y config de opencode; uso interno, no entregable)
+.opencode/
+.claude/
+.agents/
+opencode.json
+opencode.jsonc

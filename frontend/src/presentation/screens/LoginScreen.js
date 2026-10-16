@@ -2,12 +2,14 @@ import { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BrandMark } from '../components/BrandMark';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { TextField } from '../components/TextField';
 import { useAuth } from '../context/AuthContext';
@@ -52,9 +54,18 @@ export function LoginScreen({ navigation }) {
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Text style={styles.title}>Calendario</Text>
-          <Text style={styles.subtitle}>Inicia sesión para ver tu agenda.</Text>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.brand}>
+            <BrandMark size={64} />
+            <Text style={styles.brandName}>Calendario</Text>
+          </View>
+
+          <Text style={styles.title}>Bienvenido de nuevo</Text>
+          <Text style={styles.subtitle}>Inicia sesión para ver y organizar tu agenda.</Text>
 
           <TextField
             label="Correo electrónico"
@@ -65,6 +76,7 @@ export function LoginScreen({ navigation }) {
             autoComplete="email"
             keyboardType="email-address"
             placeholder="tu@correo.com"
+            returnKeyType="next"
           />
           <TextField
             label="Contraseña"
@@ -73,18 +85,28 @@ export function LoginScreen({ navigation }) {
             error={errors.password}
             secureTextEntry
             placeholder="••••••••"
+            returnKeyType="go"
+            onSubmitEditing={handleSubmit}
           />
 
-          {formError ? <Text style={styles.formError}>{formError}</Text> : null}
+          {formError ? (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>{formError}</Text>
+            </View>
+          ) : null}
 
           <PrimaryButton title="Entrar" onPress={handleSubmit} loading={isSubmitting} />
 
-          <View style={styles.spacer} />
-          <PrimaryButton
-            title="Crear una cuenta"
-            variant="ghost"
-            onPress={() => navigation.navigate('Register')}
-          />
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>¿No tienes cuenta?</Text>
+            <Pressable
+              accessibilityRole="button"
+              hitSlop={8}
+              onPress={() => navigation.navigate('Register')}
+            >
+              <Text style={styles.footerLink}> Crear una</Text>
+            </Pressable>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -95,13 +117,39 @@ const styles = StyleSheet.create({
   safeArea: { backgroundColor: colors.background, flex: 1 },
   flex: { flex: 1 },
   content: { flexGrow: 1, justifyContent: 'center', padding: spacing.lg },
-  title: { color: colors.text, fontSize: 32, fontWeight: '700', textAlign: 'center' },
+  brand: { alignItems: 'center', marginBottom: spacing.xl },
+  brandName: {
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+    marginTop: spacing.md,
+  },
+  title: {
+    color: colors.text,
+    fontSize: 24,
+    fontWeight: '800',
+    textAlign: 'left',
+  },
   subtitle: {
     color: colors.muted,
+    fontSize: 14,
+    lineHeight: 20,
     marginBottom: spacing.xl,
-    marginTop: spacing.sm,
-    textAlign: 'center',
+    marginTop: spacing.xs,
   },
-  formError: { color: colors.danger, marginBottom: spacing.md, textAlign: 'center' },
-  spacer: { height: spacing.md },
+  errorBox: {
+    backgroundColor: colors.dangerSoft,
+    borderRadius: 12,
+    marginBottom: spacing.md,
+    padding: spacing.md,
+  },
+  errorText: { color: colors.danger, fontSize: 13, textAlign: 'center' },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: spacing.lg,
+  },
+  footerText: { color: colors.muted, fontSize: 14 },
+  footerLink: { color: colors.primary, fontSize: 14, fontWeight: '700' },
 });

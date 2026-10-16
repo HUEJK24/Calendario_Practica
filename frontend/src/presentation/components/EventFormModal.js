@@ -92,12 +92,22 @@ export function EventFormModal({ visible, date, initialEvent, onClose, onSubmit,
                 <Text style={styles.sheetTitle}>{isEditing ? 'Editar evento' : 'Nuevo evento'}</Text>
                 <Text style={styles.sheetSubtitle}>{formatLongDate(new Date(draft.date))}</Text>
               </View>
-              <Pressable accessibilityRole="button" onPress={onClose} style={styles.closeButton}>
+              <Pressable
+                accessibilityLabel="Cerrar formulario"
+                accessibilityRole="button"
+                hitSlop={8}
+                onPress={onClose}
+                style={({ pressed }) => [styles.closeButton, pressed && styles.closePressed]}
+              >
                 <Text style={styles.closeSymbol}>×</Text>
               </Pressable>
             </View>
 
-            <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.scroll}
+            >
               <TextField
                 label="Título"
                 onChangeText={(value) => update({ title: value })}
@@ -136,7 +146,11 @@ export function EventFormModal({ visible, date, initialEvent, onClose, onSubmit,
                 value={draft.endTime}
               />
 
-              {error ? <Text style={styles.error}>{error}</Text> : null}
+              {error ? (
+                <View style={styles.errorBox}>
+                  <Text style={styles.errorText}>{error}</Text>
+                </View>
+              ) : null}
 
               <PrimaryButton
                 loading={isSubmitting}
@@ -195,7 +209,8 @@ const styles = StyleSheet.create({
   sheetTitle: {
     color: colors.text,
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '800',
+    letterSpacing: 0.1,
   },
   sheetSubtitle: {
     color: colors.muted,
@@ -206,20 +221,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.surfaceAlt,
     borderRadius: radius.pill,
-    height: 32,
+    height: 36,
     justifyContent: 'center',
-    width: 32,
+    width: 36,
+  },
+  closePressed: {
+    opacity: 0.86,
+    transform: [{ scale: 0.98 }],
   },
   closeSymbol: {
     color: colors.textSoft,
-    fontSize: 20,
-    lineHeight: 22,
+    fontSize: 22,
+    lineHeight: 24,
   },
-  error: {
-    color: colors.danger,
+  scroll: { paddingBottom: spacing.sm },
+  errorBox: {
+    backgroundColor: colors.dangerSoft,
+    borderRadius: 12,
     marginBottom: spacing.md,
-    textAlign: 'center',
+    padding: spacing.md,
   },
+  errorText: { color: colors.danger, fontSize: 13, textAlign: 'center' },
   deleteWrapper: {
     marginTop: spacing.sm,
   },

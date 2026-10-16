@@ -25,7 +25,7 @@ const WEEKDAYS_LONG = [
   'domingo',
 ];
 
-export { WEEKDAYS_SHORT };
+export { MONTHS, WEEKDAYS_SHORT };
 
 export function toISODate(date) {
   const year = date.getFullYear();

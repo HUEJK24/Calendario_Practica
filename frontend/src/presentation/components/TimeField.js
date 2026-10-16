@@ -49,7 +49,12 @@ export function TimeField({ label, value, onChange }) {
 
 function Stepper({ onPress, symbol }) {
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={styles.stepper}>
+    <Pressable
+      accessibilityRole="button"
+      hitSlop={6}
+      onPress={onPress}
+      style={({ pressed }) => [styles.stepper, pressed && styles.stepperPressed]}
+    >
       <Text style={styles.stepperSymbol}>{symbol}</Text>
     </Pressable>
   );
@@ -60,9 +65,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   label: {
-    color: colors.muted,
+    color: colors.textSoft,
     fontSize: 13,
-    marginBottom: spacing.xs,
+    fontWeight: '700',
+    marginBottom: spacing.xs + 3,
   },
   control: {
     alignItems: 'center',
@@ -76,17 +82,21 @@ const styles = StyleSheet.create({
   },
   stepper: {
     alignItems: 'center',
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: colors.primarySoft,
     borderRadius: radius.sm,
-    height: 30,
+    height: 40,
     justifyContent: 'center',
-    width: 30,
+    width: 40,
+  },
+  stepperPressed: {
+    opacity: 0.86,
+    transform: [{ scale: 0.98 }],
   },
   stepperSymbol: {
     color: colors.primary,
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
-    lineHeight: 20,
+    lineHeight: 22,
   },
   valueGroup: {
     alignItems: 'baseline',
@@ -96,11 +106,13 @@ const styles = StyleSheet.create({
   value: {
     color: colors.text,
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
+    letterSpacing: 0.2,
   },
   unit: {
     color: colors.muted,
     fontSize: 11,
+    fontWeight: '700',
     marginLeft: 2,
   },
   spacer: {
