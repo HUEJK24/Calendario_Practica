@@ -12,6 +12,7 @@ function required(name) {
 const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: Number(process.env.PORT) || 4000,
+  databaseUrl: process.env.DATABASE_URL || null,
   db: {
     host: process.env.DB_HOST || 'localhost',
     port: Number(process.env.DB_PORT) || 5432,

@@ -30,11 +30,15 @@ class DatabaseConnection {
   async connect() {
     if (!this.pool) {
       this.pool = new Pool({
-        host: env.db.host,
-        port: env.db.port,
-        user: env.db.user,
-        password: env.db.password,
-        database: env.db.database,
+        ...(env.databaseUrl
+          ? { connectionString: env.databaseUrl }
+          : {
+              host: env.db.host,
+              port: env.db.port,
+              user: env.db.user,
+              password: env.db.password,
+              database: env.db.database,
+            }),
         max: 10,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 5000,
