@@ -2,17 +2,16 @@ import { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useBottomInset } from '../hooks/useBottomInset';
 import { colors, radius, spacing } from '../../theme/theme';
 import { EVENT_CATEGORIES, EVENT_PRIORITIES } from '../../domain/constants/eventMeta';
-import { formatLongDate } from '../../domain/utils/date';
+import { formatLongDate, toISODate } from '../../domain/utils/date';
 import { extractApiError } from '../../data/api/client';
 import { TextField } from './TextField';
 import { ChipGroup } from './ChipGroup';
@@ -27,12 +26,12 @@ function emptyDraft(date) {
     priority: 'medium',
     startTime: '09:00',
     endTime: '10:00',
-    date,
+    date: toISODate(date),
   };
 }
 
 export function EventFormModal({ visible, date, initialEvent, onClose, onSubmit, onDelete }) {
-  const insets = useSafeAreaInsets();
+  const bottomInset = useBottomInset();
   const isEditing = Boolean(initialEvent);
   const [draft, setDraft] = useState(() =>
     initialEvent ? { ...initialEvent } : emptyDraft(date)
@@ -82,10 +81,10 @@ export function EventFormModal({ visible, date, initialEvent, onClose, onSubmit,
     <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior="padding"
           style={styles.sheetWrapper}
         >
-          <View style={[styles.sheet, { paddingBottom: spacing.lg + insets.bottom }]}>
+          <View style={[styles.sheet, { paddingBottom: spacing.lg + bottomInset }]}>
             <View style={styles.grabber} />
             <View style={styles.sheetHeader}>
               <View>
@@ -106,7 +105,8 @@ export function EventFormModal({ visible, date, initialEvent, onClose, onSubmit,
             <ScrollView
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.scroll}
+              style={styles.scroll}
+              contentContainerStyle={styles.scrollContent}
             >
               <TextField
                 label="Título"
@@ -151,24 +151,24 @@ export function EventFormModal({ visible, date, initialEvent, onClose, onSubmit,
                   <Text style={styles.errorText}>{error}</Text>
                 </View>
               ) : null}
-
-              <PrimaryButton
-                loading={isSubmitting}
-                onPress={handleSubmit}
-                title={isEditing ? 'Guardar cambios' : 'Crear evento'}
-              />
-
-              {isEditing ? (
-                <View style={styles.deleteWrapper}>
-                  <PrimaryButton
-                    disabled={isSubmitting}
-                    onPress={handleDelete}
-                    title="Eliminar evento"
-                    variant="ghost"
-                  />
-                </View>
-              ) : null}
             </ScrollView>
+
+            <PrimaryButton
+              loading={isSubmitting}
+              onPress={handleSubmit}
+              title={isEditing ? 'Guardar cambios' : 'Crear evento'}
+            />
+
+            {isEditing ? (
+              <View style={styles.deleteWrapper}>
+                <PrimaryButton
+                  disabled={isSubmitting}
+                  onPress={handleDelete}
+                  title="Eliminar evento"
+                  variant="ghost"
+                />
+              </View>
+            ) : null}
           </View>
         </KeyboardAvoidingView>
       </View>
@@ -189,6 +189,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
+    flexShrink: 1,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
   },
@@ -234,7 +235,8 @@ const styles = StyleSheet.create({
     fontSize: 22,
     lineHeight: 24,
   },
-  scroll: { paddingBottom: spacing.sm },
+  scroll: { flexShrink: 1 },
+  scrollContent: { paddingBottom: spacing.sm },
   errorBox: {
     backgroundColor: colors.dangerSoft,
     borderRadius: 12,

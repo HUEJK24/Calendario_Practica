@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEvents } from '../context/EventsContext';
+import { useBottomInset } from '../hooks/useBottomInset';
 import { EventCard } from '../components/EventCard';
 import { EmptyState } from '../components/EmptyState';
 import { EventFormModal } from '../components/EventFormModal';
@@ -17,6 +18,7 @@ import { formatLongDate, fromISODate } from '../../domain/utils/date';
 
 export function EventsScreen({ navigation }) {
   const { events, isLoading, loadError, refresh, updateEvent, deleteEvent } = useEvents();
+  const bottomInset = useBottomInset();
   const [modalVisible, setModalVisible] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
 
@@ -58,7 +60,10 @@ export function EventsScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+    <SafeAreaView
+      style={[styles.safeArea, { paddingBottom: bottomInset }]}
+      edges={['top', 'left', 'right']}
+    >
       <View style={styles.header}>
         <Pressable
           accessibilityLabel="Volver a la agenda"

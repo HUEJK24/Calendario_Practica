@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
+import { useBottomInset } from '../hooks/useBottomInset';
 import { useEvents } from '../context/EventsContext';
 import { Calendar } from '../components/Calendar';
 import { EventCard } from '../components/EventCard';
@@ -25,6 +26,7 @@ function SkeletonCard() {
 
 export function AgendaScreen({ navigation }) {
   const { user, signOut } = useAuth();
+  const bottomInset = useBottomInset();
   const {
     eventsByDay,
     isLoading,
@@ -87,7 +89,10 @@ export function AgendaScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+    <SafeAreaView
+      style={[styles.safeArea, { paddingBottom: bottomInset }]}
+      edges={['top', 'left', 'right']}
+    >
       <View style={styles.header}>
         <View style={styles.userInfo}>
           <View style={styles.avatar}>
@@ -182,7 +187,7 @@ export function AgendaScreen({ navigation }) {
         accessibilityLabel="Nuevo evento"
         accessibilityRole="button"
         onPress={openCreate}
-        style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
+        style={({ pressed }) => [styles.fab, { bottom: spacing.lg + bottomInset }, pressed && styles.fabPressed]}
       >
         <Text style={styles.fabSymbol}>+</Text>
       </Pressable>
