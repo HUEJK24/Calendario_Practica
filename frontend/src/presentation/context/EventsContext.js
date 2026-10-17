@@ -1,10 +1,17 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { eventsRepository } from '../../data/repositories/eventsRepository';
 import { extractApiError } from '../../data/api/client';
+import { eventBus } from '../../domain/observers/EventBus';
 import { toISODate, startOfDay } from '../../domain/utils/date';
 
 const EventsContext = createContext(null);
 
+/**
+ * Sprint 3 — El contexto actúa como Sujeto del patrón Observer: además de
+ * exponer el estado de la agenda, publica cada cambio en el EventBus para que
+ * los observadores (hoy, el programador de recordatorios locales) reaccionen
+ * sin que este contexto los conozca.
+ */
 export function EventsProvider({ children }) {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,18 +68,21 @@ export function EventsProvider({ children }) {
   const addEvent = useCallback(async (payload) => {
     const created = await eventsRepository.create(payload);
     setEvents((current) => [...current, created]);
+    eventBus.notify({ type: 'created', event: created });
     return created;
   }, []);
 
   const updateEvent = useCallback(async (id, payload) => {
     const updated = await eventsRepository.update(id, payload);
     setEvents((current) => current.map((event) => (event.id === id ? updated : event)));
+    eventBus.notify({ type: 'updated', event: updated });
     return updated;
   }, []);
 
   const deleteEvent = useCallback(async (id) => {
     await eventsRepository.remove(id);
     setEvents((current) => current.filter((event) => event.id !== id));
+    eventBus.notify({ type: 'deleted', event: { id } });
   }, []);
 
   const value = useMemo(

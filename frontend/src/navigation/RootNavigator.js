@@ -1,6 +1,7 @@
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { useAuth } from '../presentation/context/AuthContext';
 import { EventsProvider } from '../presentation/context/EventsContext';
+import { EventReminderObserver } from '../presentation/observers/EventReminderObserver';
 import { SplashScreen } from '../presentation/screens/SplashScreen';
 import { colors } from '../theme/theme';
 import { AppStack } from './AppStack';
@@ -29,6 +30,10 @@ export function RootNavigator() {
     <NavigationContainer theme={navigationTheme}>
       {isAuthenticated ? (
         <EventsProvider>
+          {/* Sprint 3 — observador que escucha los cambios y programa los
+              recordatorios locales. Vive dentro del provider para estar
+              suscrito mientras la agenda está activa. */}
+          <EventReminderObserver />
           <AppStack />
         </EventsProvider>
       ) : (

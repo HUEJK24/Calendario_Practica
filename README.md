@@ -127,6 +127,7 @@ Endpoints disponibles:
 - `GET  /api/events/:id` (protegido)
 - `PUT  /api/events/:id` (protegido)
 - `DELETE /api/events/:id` (protegido)
+- `GET  /api/events/export?format=json|csv` (protegido) — exportación (Sprint 3)
 
 ### Frontend
 
@@ -139,6 +140,17 @@ npm start
 
 Para probar desde un dispositivo físico, ajusta `EXPO_PUBLIC_API_URL` a la IP de la máquina
 donde corre el servidor (por ejemplo `http://192.168.1.10:4000`).
+
+### Pruebas
+
+```bash
+cd backend  && npm test   # Jest (backend)
+cd frontend && npm test   # Jest + jest-expo (frontend)
+```
+
+La infraestructura está configurada (ver `jest.config.js` en cada proyecto); las suites de
+pruebas se agregan en `tests/`. Las pruebas de backend usan un mock de la base de datos
+(`src/config/__mocks__/database.js`), por lo que no requieren PostgreSQL.
 
 ---
 
