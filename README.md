@@ -18,7 +18,7 @@ Diseñar, codificar y defender una aplicación móvil de agenda que cumpla con:
 - Implementación de patrones de diseño (Singleton, Strategy, Observer).
 - Codificación segura (hashing fuerte, almacenamiento cifrado, mitigación de IDOR e inyecciones).
 - Flujo completo de autenticación y operaciones CRUD.
-- Pruebas unitarias y principios SOLID.
+- Pruebas unitarias y auditoría de dependencias.
 
 ---
 
@@ -51,10 +51,12 @@ Calendario/
 │   │   │   └── export/      # Patrón Strategy (JSON / CSV)
 │   │   └── validators/      # Esquemas de validación de entrada (Zod)
 │   ├── sql/                 # Esquema de base de datos
+│   ├── tests/               # Pruebas unitarias (Jest + Supertest)
 │   ├── jest.config.js       # Infraestructura de pruebas (Sprint 4)
 │   └── docker-compose.yml
 └── frontend/                # App móvil (React Native + Expo)
     ├── app.json             # Config nativa: package, versionCode, iconos
+    ├── tests/               # Pruebas unitarias (Jest + jest-expo)
     ├── jest.config.js       # Infraestructura de pruebas (Sprint 4)
     └── src/
         ├── domain/          # Entidades, constantes y utilidades
@@ -98,11 +100,16 @@ Calendario/
 - **Seguridad:** manejador global de excepciones en el frontend y respuestas 5xx sin fuga de
   internos en el backend.
 
-### Sprint 4 — Pruebas Unitarias, Refactorización y Auditoría
-- Infraestructura de pruebas con **Jest** en backend (más **Supertest**) y **Jest + jest-expo**
-  en frontend, con mock de la base de datos.
-- Refactorización bajo principios **SOLID**.
-- Auditoría de dependencias (`npm audit`) y cierre del marco ágil.
+### Sprint 4 — Pruebas Unitarias y Auditoría
+- **57 pruebas unitarias**: 40 de backend con **Jest + Supertest** y 17 de frontend con
+  **Jest + jest-expo**. La base de datos se mockea, así que corren sin PostgreSQL.
+- Cobertura del 100% en autenticación (`user.model`, `token.service`, `auth.controller`,
+  `auth.middleware`), validación de eventos (`event.schema`) y fechas (`date.js`).
+- Auditoría con `npm audit`: el backend de producción queda sin vulnerabilidades; los
+  hallazgos transitivos de Expo en el frontend están documentados.
+- La arquitectura por capas y los patrones existentes (Singleton, Strategy, Observer) se
+  mantienen sin refactor estructural.
+- Guía de ejecución para QA: [`qa/sprint-4/README.md`](qa/sprint-4/README.md).
 
 ---
 
@@ -151,12 +158,13 @@ ambos equipos en la misma red.
 ### Pruebas
 
 ```bash
-cd backend  && npm test   # Jest (backend)
-cd frontend && npm test   # Jest + jest-expo (frontend)
+cd backend  && npm test -- --coverage   # Jest + Supertest
+cd frontend && npm test -- --coverage   # Jest + jest-expo
 ```
 
-La infraestructura está configurada (ver `jest.config.js` en cada proyecto). Las pruebas de
-backend usan un mock de la base de datos, por lo que no requieren PostgreSQL.
+Son 57 pruebas unitarias: 40 de backend y 17 de frontend. El backend usa un mock de la base
+de datos, por lo que no requiere PostgreSQL. La guía paso a paso para QA está en
+[`qa/sprint-4/README.md`](qa/sprint-4/README.md).
 
 ---
 

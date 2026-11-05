@@ -22,6 +22,9 @@ documents/
 /tmp/doc-*
 *.tmp
 
+# Evidencia local de QA (logs y capturas)
+qa/sprint-4/evidencias/
+
 # IA / asistente (skills, reglas y config de opencode; uso interno, no entregable)
 .opencode/
 .claude/

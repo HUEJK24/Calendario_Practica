@@ -2,6 +2,8 @@
 
 Guía completa para el responsable de QA: `qa/Guia_QA_Sprint_Final_Jose_Manuel_Mandujano.pdf`.
 
+Cierre del Sprint 4 con evidencias: `qa/sprint-4/cierre-sprint.md`.
+
 Las pruebas se hacen contra la aplicación desplegada, con el APK y la app web. El entorno local queda como apoyo para reproducir fallos.
 
 ## 1. Entorno
@@ -153,14 +155,70 @@ docker exec -i calendario-db psql -U calendario -d calendario < qa/scripts/clean
 - **App web:** abre la URL del despliegue y repite registro, login y CRUD. SecureStore y las notificaciones son APIs nativas; si la sesión no persiste o el recordatorio no aparece en el navegador, anótalo como limitación y valida ese caso en el APK.
 - **Expo Go:** solo para depurar en local. No forma parte de estas pruebas.
 
-## 7. Pruebas unitarias
+## 7. Pruebas unitarias y auditoría (Sprint 4)
+
+Guía detallada: `qa/sprint-4/README.md`.
+
+### Herramientas
+
+| Herramienta | Versión | Uso |
+| --- | --- | --- |
+| Node.js | 18 o superior | Ejecutar Jest. |
+| npm | 9 o superior | Instalar dependencias y correr scripts. |
+| Git | Cualquiera | Clonar el repositorio. |
+| Terminal | Cualquiera | Ejecutar los comandos. |
+
+No necesitas Docker, PostgreSQL, Android SDK ni la API desplegada: las pruebas unitarias usan mocks.
+
+### Instalación
 
 ```bash
-cd backend && npm test
-cd frontend && npm test
+cd backend && npm ci
+cd ../frontend && npm ci
 ```
 
-El backend usa Jest + Supertest y mockea la base de datos. El frontend usa Jest con `jest-expo`.
+### Ejecución
+
+```bash
+bash qa/scripts/run-unit-tests.sh
+```
+
+O por separado:
+
+```bash
+cd backend && npm test -- --coverage
+cd frontend && npm test -- --coverage
+```
+
+Resultado esperado: 40 pruebas de backend y 17 de frontend, 57 en total, todas en verde. La cobertura es 100% en `user.model`, `token.service`, `auth.controller`, `auth.middleware`, `event.schema` y `date.js`.
+
+| Suite | Archivos | Pruebas | Cobertura clave |
+| --- | --- | --- | --- |
+| Backend | 4 | 40 | Autenticación y validación al 100%. |
+| Frontend | 1 | 17 | `date.js` al 100%. |
+
+### Auditoría de dependencias
+
+```bash
+bash qa/scripts/run-audit.sh
+```
+
+O:
+
+```bash
+cd backend && npm audit --omit=dev
+cd frontend && npm audit --omit=dev
+```
+
+El backend de producción queda sin vulnerabilidades. El frontend mantiene hallazgos transitivos de Expo; el detalle y la decisión están en `qa/sprint-4/auditoria-dependencias.md`. No ejecutes `npm audit fix --force`.
+
+### Evidencia
+
+Los scripts guardan los logs en `qa/sprint-4/evidencias/`. Adjunta una captura de la terminal con el resumen y el reporte de cobertura.
+
+### Alcance
+
+La refactorización SOLID queda fuera de esta entrega. La arquitectura actual se mantiene; estas pruebas miden la calidad de lo que ya funciona.
 
 ## 8. Herramientas opcionales
 
