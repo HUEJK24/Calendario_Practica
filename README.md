@@ -135,19 +135,6 @@ npm install
 npm run dev               # servidor en http://localhost:4000
 ```
 
-Crea el archivo `backend/.env` con:
-
-```
-NODE_ENV=development
-PORT=4000
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=calendario
-DB_PASSWORD=calendario
-DB_NAME=calendario
-JWT_SECRET=<cadena-secreta>
-```
-
 > En despliegue se usa `DATABASE_URL` en lugar de las variables `DB_*`; si existe,
 > tiene prioridad y habilita SSL automáticamente.
 
