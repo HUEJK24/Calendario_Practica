@@ -4,13 +4,35 @@
  * Sin dependencias: usa fetch nativo de Node 18+.
  *
  *   node qa/scripts/smoke.mjs
- *   QA_BASE_URL=https://mi-api.onrender.com node qa/scripts/smoke.mjs
+ *   QA_BASE_URL=https://mi-api.example.com QA_ALLOW_REMOTE=1 node qa/scripts/smoke.mjs
+ *
+ * El script crea usuarios y eventos reales. Contra un entorno remoto exige
+ * QA_ALLOW_REMOTE=1 para no ensuciar la base por accidente.
  *
  * Sale con código 0 si todo pasa y 1 si falla algo.
  */
 import assert from 'node:assert/strict';
 
 const BASE_URL = (process.env.QA_BASE_URL || 'http://localhost:4000').replace(/\/+$/, '');
+
+function isLocalHost(value) {
+  try {
+    const host = new URL(value).hostname;
+    return (
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host === '::1' ||
+      host === '10.0.2.2' ||
+      /^10\./.test(host) ||
+      /^192\.168\./.test(host) ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(host)
+    );
+  } catch {
+    return false;
+  }
+}
+
+const LOCAL = isLocalHost(BASE_URL);
 const PASSWORD = 'QaPassword123!';
 const stamp = `${Date.now()}${Math.floor(Math.random() * 1000)}`;
 const userA = { email: `qa+${stamp}@example.com`, password: PASSWORD };
@@ -62,17 +84,31 @@ const eventPayload = {
 };
 
 async function run() {
+  if (!LOCAL && process.env.QA_ALLOW_REMOTE !== '1') {
+    console.error(`El destino ${BASE_URL} no es local.`);
+    console.error('El script crea usuarios y eventos reales en esa base de datos.');
+    console.error('Si es un entorno de pruebas, repite con QA_ALLOW_REMOTE=1.');
+    process.exitCode = 1;
+    return;
+  }
+
   try {
     await fetch(`${BASE_URL}/health`);
   } catch {
     console.error(`No se pudo conectar a ${BASE_URL}.`);
-    console.error('Levanta el backend: cd backend && docker compose up -d && npm run dev');
-    console.error('O apunta a otro entorno: QA_BASE_URL=https://mi-api node qa/scripts/smoke.mjs');
+    if (LOCAL) {
+      console.error('Levanta el backend: cd backend && docker compose up -d && npm run dev');
+    } else {
+      console.error('Revisa la URL y que el servicio esté arriba. Puede tardar en despertar.');
+    }
     process.exitCode = 1;
     return;
   }
 
   console.log(`\nSecurePlan QA — ${BASE_URL}\n`);
+  if (!LOCAL) {
+    console.log('AVISO: entorno remoto. Se crearán usuarios y eventos de prueba reales.\n');
+  }
 
   console.log('Salud');
   await test('GET /health responde ok', async () => {
@@ -341,12 +377,22 @@ async function run() {
     process.exitCode = 1;
   }
   console.log(`\nCorreos de prueba: ${userA.email} | ${userB.email}`);
-  console.log('Limpieza: docker exec -i calendario-db psql -U calendario -d calendario < qa/scripts/cleanup.sql\n');
+  if (LOCAL) {
+    console.log(
+      'Limpieza: docker exec -i calendario-db psql -U calendario -d calendario < qa/scripts/cleanup.sql\n'
+    );
+  } else {
+    console.log('Limpieza: pide al responsable ejecutar qa/scripts/cleanup.sql en la base desplegada.\n');
+  }
 }
 
 run().catch((error) => {
   console.error(`\nNo se pudo completar la prueba contra ${BASE_URL}`);
   console.error(`${error.message}\n`);
-  console.error('Revisa que el backend esté arriba: cd backend && docker compose up -d && npm run dev');
+  console.error(
+    LOCAL
+      ? 'Revisa que el backend esté arriba: cd backend && docker compose up -d && npm run dev'
+      : 'Revisa la URL y que el servicio esté arriba.'
+  );
   process.exitCode = 1;
 });
