@@ -168,7 +168,7 @@ Guía detallada: `qa/sprint-4/README.md`.
 | Git | Cualquiera | Clonar el repositorio. |
 | Terminal | Cualquiera | Ejecutar los comandos. |
 
-No necesitas Docker, PostgreSQL, Android SDK ni la API desplegada: las pruebas unitarias usan mocks.
+No necesitas Docker, PostgreSQL, Android SDK ni la API desplegada: las pruebas unitarias usan mocks. En Windows usa Node 20 LTS y Git Bash para los scripts `.sh`; los requisitos del equipo y las precauciones están en `qa/sprint-4/README.md`.
 
 ### Instalación
 

@@ -126,17 +126,20 @@ Calendario/
 ## Cómo ejecutar el proyecto
 
 ### Requisitos
-- Node.js 18+
-- Docker y Docker Compose
+- Node.js 20 LTS (mínimo 18) y npm 10+
+- Git
+- Docker y Docker Compose (solo para el backend local)
 - Para desarrollo: **Expo Go** en un dispositivo o emulador
 - Para compilar la APK: **JDK 17** y el **Android SDK** (build-tools 36, NDK 27, cmake 3.22)
+
+Para QA contra el entorno desplegado no necesitas Docker ni PostgreSQL. Las pruebas usan mocks o la API desplegada.
 
 ### Backend
 
 ```bash
 cd backend
+npm ci                    # instala las dependencias del backend
 docker compose up -d      # levanta PostgreSQL
-npm install
 npm run dev               # servidor en http://localhost:4000
 ```
 
@@ -147,7 +150,7 @@ firma de tokens. Ese archivo no se versiona.
 
 ```bash
 cd frontend
-npm install
+npm ci                    # instala las dependencias del frontend
 npx expo start
 ```
 
