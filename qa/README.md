@@ -2,7 +2,7 @@
 
 Guía completa para el responsable de QA: `qa/Guia_QA_Sprint_Final_Jose_Manuel_Mandujano.pdf`.
 
-Carpeta para probar la API a mano y por script. No forma parte del entregable: `qa/` no está en `.gitignore`, así que agrega esa línea si no quieres versionarla.
+Carpeta para probar la API a mano y por script.
 
 ## 1. Antes de probar
 
@@ -96,7 +96,7 @@ El script no instala nada: usa `fetch` de Node 18 o superior. Requiere el backen
 Contra otro entorno:
 
 ```bash
-QA_BASE_URL=https://mi-api.onrender.com node qa/scripts/smoke.mjs
+QA_BASE_URL=https://mi-api.example.com node qa/scripts/smoke.mjs
 ```
 
 Código de salida `0` si pasa todo y `1` si falla algo, así que sirve en CI o en un hook de pre-push.

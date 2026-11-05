@@ -32,8 +32,6 @@ Diseñar, codificar y defender una aplicación móvil de agenda que cumpla con:
 | Build nativo | Android SDK 36, NDK 27, Gradle 9.4 (APK sin Expo Go) |
 | Seguridad | bcrypt, JWT, Expo SecureStore |
 | Pruebas | Jest, Supertest, jest-expo |
-| Despliegue | Render (backend + PostgreSQL) |
-| Gestión | Jira / Trello + GitHub |
 
 ---
 
@@ -135,33 +133,8 @@ npm install
 npm run dev               # servidor en http://localhost:4000
 ```
 
-Crea el archivo `backend/.env` con:
-
-```
-NODE_ENV=development
-PORT=4000
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=calendario
-DB_PASSWORD=calendario
-DB_NAME=calendario
-JWT_SECRET=<cadena-secreta>
-```
-
-> En despliegue se usa `DATABASE_URL` en lugar de las variables `DB_*`; si existe,
-> tiene prioridad y habilita SSL automáticamente.
-
-Endpoints disponibles:
-- `GET  /health`
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET  /api/auth/me` (protegido con Bearer Token)
-- `GET  /api/events` (protegido)
-- `POST /api/events` (protegido)
-- `GET  /api/events/:id` (protegido)
-- `PUT  /api/events/:id` (protegido)
-- `DELETE /api/events/:id` (protegido)
-- `GET  /api/events/export?format=json|csv` (protegido) — exportación (Sprint 3)
+Copia `backend/.env.example` a `backend/.env` y ajusta los valores de conexión y la clave de
+firma de tokens. Ese archivo no se versiona.
 
 ### Frontend
 
@@ -171,14 +144,9 @@ npm install
 npx expo start
 ```
 
-Crea el archivo `frontend/.env` con:
-
-```
-EXPO_PUBLIC_API_URL=http://localhost:4000
-```
-
-Para un dispositivo físico, ajusta `EXPO_PUBLIC_API_URL` a la IP de la máquina donde corre el
-servidor (por ejemplo `http://192.168.1.10:4000`). Ambos dispositivos deben estar en la misma red.
+Copia `frontend/.env.example` a `frontend/.env` y define `EXPO_PUBLIC_API_URL` con la URL del
+backend local. En un dispositivo físico usa la IP de la máquina donde corre el servidor y mantén
+ambos equipos en la misma red.
 
 ### Pruebas
 
@@ -187,9 +155,8 @@ cd backend  && npm test   # Jest (backend)
 cd frontend && npm test   # Jest + jest-expo (frontend)
 ```
 
-La infraestructura está configurada (ver `jest.config.js` en cada proyecto); las suites de
-pruebas se agregan en `tests/`. Las pruebas de backend usan un mock de la base de datos
-(`src/config/__mocks__/database.js`), por lo que no requieren PostgreSQL.
+La infraestructura está configurada (ver `jest.config.js` en cada proyecto). Las pruebas de
+backend usan un mock de la base de datos, por lo que no requieren PostgreSQL.
 
 ---
 
@@ -197,7 +164,6 @@ pruebas se agregan en `tests/`. Las pruebas de backend usan un mock de la base d
 
 ```bash
 cd frontend
-echo "EXPO_PUBLIC_API_URL=https://<tu-backend>" > .env
 npx expo prebuild -p android
 cd android && ./gradlew assembleRelease
 ```
@@ -218,23 +184,6 @@ Consideraciones:
 
 ---
 
-## Despliegue del backend en Render
-
-1. **Base de datos**: `New → PostgreSQL` y copiar la *Internal Database URL*.
-2. **Esquema**: ejecutar `backend/sql/init.sql` desde *Data → PostgreSQL → Queries*.
-3. **Servicio web**: `New → Web Service` con:
-   - Root Directory: `backend`
-   - Build Command: `npm install`
-   - Start Command: `npm start`
-   - Health Check Path: `/health`
-4. **Variables de entorno**:
-   - `NODE_ENV=production`
-   - `JWT_SECRET` (obligatorio; el servidor se niega a arrancar en producción con el valor por defecto)
-   - `DATABASE_URL` (añadir `?sslmode=require` si no viene incluido)
-5. Compilar la APK apuntando `EXPO_PUBLIC_API_URL` a la URL pública generada.
-
----
-
 ## Codificación Segura
 
 - Contraseñas cifradas con **bcrypt** (nunca en texto plano).
@@ -248,6 +197,6 @@ Consideraciones:
 
 ## Metodología y Control de Versiones
 
-- Tablero Scrum (Jira / Trello) con historias de usuario.
+- Tablero Scrum con historias de usuario.
 - Uso de ramas y **Pull Requests** aprobadas (sin pushes directos a `main`).
-- Repositorio GitHub con historial de commits por integrante.
+- Historial de commits atribuido por integrante.
