@@ -1,0 +1,476 @@
+{
+  "info": {
+    "name": "SecurePlan QA",
+    "description": "Colección de QA de la API de SecurePlan Mobile. Ejecutar en orden: Salud, Autenticación, Eventos, Exportación, Seguridad.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000" },
+    { "key": "email", "value": "" },
+    { "key": "token", "value": "" },
+    { "key": "eventId", "value": "" },
+    { "key": "otherEventId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Salud",
+      "item": [
+        {
+          "name": "Health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 y status ok', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().status).to.eql('ok');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/health",
+            "auth": { "type": "noauth" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Autenticación",
+      "item": [
+        {
+          "name": "Registro",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201, token y usuario sin contraseña', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.property('token');",
+                  "  pm.expect(body.user).to.not.have.property('password');",
+                  "  pm.collectionVariables.set('token', body.token);",
+                  "  pm.collectionVariables.set('email', body.user.email);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"qa+{{$timestamp}}-{{$randomInt}}@example.com\",\n  \"password\": \"QaPassword123!\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/register",
+            "auth": { "type": "noauth" }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 y token', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.collectionVariables.set('token', pm.response.json().token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"QaPassword123!\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login",
+            "auth": { "type": "noauth" }
+          }
+        },
+        {
+          "name": "Me",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 con usuario', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().user).to.have.property('email');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/auth/me" }
+        },
+        {
+          "name": "Me sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('401', () => pm.response.to.have.status(401));"],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/auth/me",
+            "auth": { "type": "noauth" }
+          }
+        },
+        {
+          "name": "Me con token inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('401', () => pm.response.to.have.status(401));"],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer token.falso.invalido" }],
+            "url": "{{baseUrl}}/api/auth/me",
+            "auth": { "type": "noauth" }
+          }
+        },
+        {
+          "name": "Registro con contraseña corta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('400', () => pm.response.to.have.status(400));"],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"qa+corta+{{$timestamp}}@example.com\",\n  \"password\": \"123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/register",
+            "auth": { "type": "noauth" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Eventos",
+      "item": [
+        {
+          "name": "Crear evento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201 y guarda eventId', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  const event = pm.response.json().event;",
+                  "  pm.expect(event).to.have.property('id');",
+                  "  pm.collectionVariables.set('eventId', event.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"QA evento\",\n  \"description\": \"Creado desde Postman\",\n  \"date\": \"2026-12-01\",\n  \"startTime\": \"09:00\",\n  \"endTime\": \"10:30\",\n  \"category\": \"work\",\n  \"priority\": \"high\"\n}"
+            },
+            "url": "{{baseUrl}}/api/events"
+          }
+        },
+        {
+          "name": "Listar eventos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 con arreglo events', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().events).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/events" }
+        },
+        {
+          "name": "Obtener evento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 con el eventId guardado', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().event.id).to.eql(Number(pm.collectionVariables.get('eventId')));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/events/{{eventId}}" }
+        },
+        {
+          "name": "Actualizar evento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 con título actualizado', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().event.title).to.eql('QA evento actualizado');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"QA evento actualizado\",\n  \"description\": \"Creado desde Postman\",\n  \"date\": \"2026-12-01\",\n  \"startTime\": \"09:00\",\n  \"endTime\": \"10:30\",\n  \"category\": \"work\",\n  \"priority\": \"low\"\n}"
+            },
+            "url": "{{baseUrl}}/api/events/{{eventId}}"
+          }
+        },
+        {
+          "name": "Obtener evento inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('404', () => pm.response.to.have.status(404));"],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/events/99999999" }
+        },
+        {
+          "name": "Id no numérico",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('400', () => pm.response.to.have.status(400));"],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/events/abc" }
+        },
+        {
+          "name": "Borrar evento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('204 sin cuerpo', () => {", "  pm.response.to.have.status(204);", "  pm.expect(pm.response.text()).to.eql('');", "});"],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/api/events/{{eventId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Exportación",
+      "item": [
+        {
+          "name": "Export JSON",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 JSON', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "  pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/events/export?format=json"
+          }
+        },
+        {
+          "name": "Export CSV",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 CSV con cabecera', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.headers.get('Content-Type')).to.include('text/csv');",
+                  "  pm.expect(pm.response.text()).to.match(/^id,title,description,date,startTime,endTime,category,priority/);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/events/export?format=csv"
+          }
+        },
+        {
+          "name": "Export formato inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('400', () => pm.response.to.have.status(400));"],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/events/export?format=xml"
+          }
+        },
+        {
+          "name": "Export sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('401', () => pm.response.to.have.status(401));"],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/events/export?format=json",
+            "auth": { "type": "noauth" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Seguridad",
+      "item": [
+        {
+          "name": "IDOR: leer evento ajeno",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('404 con otherEventId de otro usuario', () => {",
+                  "  pm.expect(pm.collectionVariables.get('otherEventId'), 'define otherEventId').to.not.eql('');",
+                  "  pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/events/{{otherEventId}}"
+          }
+        },
+        {
+          "name": "Cuerpo con campo extra",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('400 por .strict()', () => pm.response.to.have.status(400));"],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"QA strict\",\n  \"date\": \"2026-12-01\",\n  \"startTime\": \"09:00\",\n  \"endTime\": \"10:00\",\n  \"category\": \"work\",\n  \"priority\": \"high\",\n  \"userId\": 1\n}"
+            },
+            "url": "{{baseUrl}}/api/events"
+          }
+        },
+        {
+          "name": "Fin anterior al inicio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('400 por orden de horas', () => pm.response.to.have.status(400));"],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"QA horas\",\n  \"date\": \"2026-12-01\",\n  \"startTime\": \"11:00\",\n  \"endTime\": \"10:00\",\n  \"category\": \"work\",\n  \"priority\": \"high\"\n}"
+            },
+            "url": "{{baseUrl}}/api/events"
+          }
+        }
+      ]
+    }
+  ]
+}
